@@ -2,9 +2,9 @@
 
 namespace App\Trait;
 
-use App\Helper\HttpStatusCode;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
+use Symfony\Component\HttpFoundation\Response;
 
 trait ValidationTrait
 {
@@ -15,7 +15,7 @@ trait ValidationTrait
         $response = response()->json([
             'message' => 'Invalid data send',
             'details' => $errors->messages(),
-        ], HttpStatusCode::UNPROCESSABLE_ENTITY);
+        ], Response::HTTP_UNPROCESSABLE_ENTITY);
 
         throw new HttpResponseException($response);
     }

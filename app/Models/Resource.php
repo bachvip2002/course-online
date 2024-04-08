@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Resource extends Model
 {
-    use HasFactory, SoftDeletes, FilterQueryTrait;
+    use HasFactory, FilterQueryTrait;
 
     protected $fillable = [
         'file_path',
