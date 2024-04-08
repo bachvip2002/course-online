@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Trait\FilterQueryTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User;
 use Laravel\Sanctum\HasApiTokens;
 
 class Admin extends User
 {
-    use HasFactory, HasApiTokens;
+    use HasFactory, HasApiTokens, FilterQueryTrait;
 
     protected $fillable = [
         'id_login',

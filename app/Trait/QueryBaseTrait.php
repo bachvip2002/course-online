@@ -19,7 +19,7 @@ trait QueryBaseTrait
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function queryEloquentBuilder()
+    public function query()
     {
         return $this->query();
     }

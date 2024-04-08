@@ -31,7 +31,7 @@ class ChapterController extends Controller
         $courseId = $request->query('course_id');
 
         $course = $this->course
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($courseId);
 
         return view('manager.page.course.learning-roadmap.chapter.create-page', [
@@ -45,11 +45,11 @@ class ChapterController extends Controller
         $chapterId = $request->query('chapter_id');
 
         $course = $this->course
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($courseId);
 
         $chapter = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($chapterId);
 
         return view('manager.page.course.learning-roadmap.chapter.edit-page', [
@@ -63,11 +63,11 @@ class ChapterController extends Controller
         $courseId = $request->query('course_id');
 
         $course = $this->course
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($courseId);
 
         $chapters = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->orderBy('order')
             ->where('course_id', '=', $course->id)
             ->get();
@@ -84,11 +84,11 @@ class ChapterController extends Controller
         $chapterId = $request->query('chapter_id');
 
         $course = $this->course
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($courseId);
 
         $chapter = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($chapterId);
 
         return view('manager.page.course.learning-roadmap.chapter.detail-page', [
@@ -102,7 +102,7 @@ class ChapterController extends Controller
         $courseId = $request->input('course_id');
 
         $orderMax = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->where('course_id', $courseId)
             ->max('order');
 
@@ -116,7 +116,7 @@ class ChapterController extends Controller
         ]);
 
         $chapter = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->create($attributes);
 
         return response()->json([
@@ -134,7 +134,7 @@ class ChapterController extends Controller
         ]);
 
         $chapter = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->find($chapterId);
 
         if (empty($chapter)) {
@@ -156,7 +156,7 @@ class ChapterController extends Controller
         $chapterId = $request->chapter_id;
 
         $chapter = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->find($chapterId);
 
         if (empty($chapter)) {
@@ -184,7 +184,7 @@ class ChapterController extends Controller
         ]);
 
         $chapter = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->find($chapterId);
 
         if (empty($chapter)) {

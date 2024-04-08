@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Trait\FilterQueryTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Resource extends BaseModel
+class Resource extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, FilterQueryTrait;
 
     protected $fillable = [
         'file_path',

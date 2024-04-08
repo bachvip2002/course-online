@@ -28,7 +28,7 @@ class ResourceManagementController extends Controller
     {
         $resourceTypes = Resource::TYPE_ARRAY;
         $resources = $this->resource
-            ->queryEloquentBuilder()
+            ->query()
             ->paginate(PAGE_SIZE_DEFAULT);
 
         return view('manager.page.resource-management.list-page', [

@@ -26,7 +26,7 @@ class UserController extends Controller
     public function renderListPage(Request $request)
     {
         $users = $this->user
-            ->queryEloquentBuilder()
+            ->query()
             ->findStrBy('full_name', $request)
             ->findStrBy('phone_number', $request)
             ->findBy('status', $request)
@@ -47,7 +47,7 @@ class UserController extends Controller
         // $responseClient = Http::get('https://www.youtube.com/27c95ca9-7b15-4796-8291-8a205962f5b9');
 
         $user = $this->user
-            ->queryEloquentBuilder()
+            ->query()
             ->find($userId);
 
         $defaultStatues = User::DEFAULT_STATUES;
@@ -72,7 +72,7 @@ class UserController extends Controller
         $userId = $request->user_id;
 
         $user = $this->user
-            ->queryEloquentBuilder()
+            ->query()
             ->find($userId);
 
         $defaultStatues = User::DEFAULT_STATUES;
@@ -106,7 +106,7 @@ class UserController extends Controller
         $attributes['avatar_path'] = $avatarPath;
 
         $user = $this->user
-            ->queryEloquentBuilder()
+            ->query()
             ->create($attributes);
 
         return response()->json([
@@ -142,7 +142,7 @@ class UserController extends Controller
         }
 
         $user = $this->user
-            ->queryEloquentBuilder()
+            ->query()
             ->find($userId)
             ->update($attributes);
 
@@ -164,7 +164,7 @@ class UserController extends Controller
         $userId = $request->user_id;
 
         $user = $this->user
-            ->queryEloquentBuilder()
+            ->query()
             ->find($userId);
 
         if (empty($user)) {

@@ -28,11 +28,11 @@ class LearningRoadmapController extends Controller
         $courseId = $request->course_id;
 
         $course = $this->course
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($courseId);
 
         $chapters = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->with([
                 'lessons' => function ($query) {
                     $query->orderBy('order');

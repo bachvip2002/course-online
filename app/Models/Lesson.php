@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Trait\FilterQueryTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Lesson extends BaseModel
+class Lesson extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, FilterQueryTrait;
 
     protected $fillable = [
         'chapter_id',

@@ -44,11 +44,11 @@ class LessonController extends Controller
         $chapterId = $request->query('chapter_id');
 
         $course = $this->course
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($courseId);
 
         $chapter = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($chapterId);
 
         $chapter->load('lessons');
@@ -66,7 +66,7 @@ class LessonController extends Controller
         $chapterId = $request->query('chapter_id');
 
         $lesson = $this->lesson
-            ->queryEloquentBuilder()
+            ->query()
             ->find($lessonId);
 
         return view('manager.page.course.learning-roadmap.lesson.video-create-page', [
@@ -85,15 +85,15 @@ class LessonController extends Controller
         $chapterId = $request->query('chapter_id');
 
         $course = $this->course
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($courseId);
 
         $chapter = $this->chapter
-            ->queryEloquentBuilder()
+            ->query()
             ->findOrFail($chapterId);
 
         $lessons = $this->lesson
-            ->queryEloquentBuilder()
+            ->query()
             ->where('chapter_id', $chapter->id)
             ->get();
 
@@ -115,7 +115,7 @@ class LessonController extends Controller
         $lessonId = $request->query('lesson_id');
 
         $lesson = $this->lesson
-            ->queryEloquentBuilder()
+            ->query()
             ->find($lessonId);
 
         try {

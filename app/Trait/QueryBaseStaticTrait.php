@@ -29,7 +29,7 @@ trait QueryBaseStaticTrait
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function queryEloquentBuilder()
+    public static function query()
     {
         return static::query();
     }

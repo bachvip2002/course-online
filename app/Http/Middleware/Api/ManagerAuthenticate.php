@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Helper\HttpStatusCode;
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ManagerAuthenticate
 {
@@ -15,7 +15,7 @@ class ManagerAuthenticate
         } else {
             return response()->json([
                 'message' => 'failed'
-            ], HttpStatusCode::UNAUTHORIZED);
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
 }

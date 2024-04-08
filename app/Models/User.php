@@ -2,19 +2,22 @@
 
 namespace App\Models;
 
+use App\Trait\FilterQueryTrait;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends BaseModel
+class User extends Model
 {
     use HasApiTokens,
         HasFactory,
         Notifiable,
         Authenticatable,
-        SoftDeletes;
+        SoftDeletes,
+        FilterQueryTrait;
 
     /**
      * The attributes that are mass assignable.
