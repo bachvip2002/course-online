@@ -22,7 +22,7 @@ Route::prefix('manager')
     ->middleware([ManagerAuthenticate::class])
     ->group(
         function () {
-            Route::get('dashboard.index', [DashboardController::class, 'index'])
+            Route::get('dashboard/index', [DashboardController::class, 'index'])
                 ->name('dashboard.index');
 
             Route::get('user/list-page', [UserController::class, 'renderListPage'])
