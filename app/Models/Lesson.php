@@ -17,8 +17,8 @@ class Lesson extends Model
         'try_learning',
         'release_datetime',
         'type',
-        'video_path',
-        'avatar_path',
+        'video',
+        'avatar',
         'description',
         'order',
     ];

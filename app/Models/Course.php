@@ -16,7 +16,7 @@ class Course extends Model
         'name',
         'price',
         'status',
-        'image_path',
+        'image',
         'release_datetime',
         'description',
     ];

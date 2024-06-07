@@ -26,45 +26,52 @@ class ChapterController extends Controller
         $this->chapter = $chapter;
     }
 
-    public function renderCreatePage(Request $request)
+    public function create(Request $request)
     {
-        $courseId = $request->query('course_id');
-
         $course = $this->course
             ->query()
-            ->findOrFail($courseId);
+            ->findOrFail($request->query('course_id'));
 
-        return view('manager.page.course.learning-roadmap.chapter.create-page', [
-            'course' => $course,
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course,
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.chapter.create', [
+                'course' => $course,
+            ]);
+        }
     }
 
-    public function renderEditPage(Request $request)
+    public function edit(Request $request)
     {
-        $courseId = $request->query('course_id');
-        $chapterId = $request->query('chapter_id');
-
         $course = $this->course
             ->query()
-            ->findOrFail($courseId);
+            ->findOrFail($request->query('course_id'));
 
         $chapter = $this->chapter
             ->query()
-            ->findOrFail($chapterId);
+            ->findOrFail($request->query('chapter_id'));
 
-        return view('manager.page.course.learning-roadmap.chapter.edit-page', [
-            'course' => $course,
-            'chapter' => $chapter,
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course,
+                'chapter' => $chapter,
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.chapter.edit', [
+                'course' => $course,
+                'chapter' => $chapter,
+            ]);
+        }
     }
 
-    public function renderRecordOrderPage(Request $request)
+    public function recordOrder(Request $request)
     {
-        $courseId = $request->query('course_id');
-
         $course = $this->course
             ->query()
-            ->findOrFail($courseId);
+            ->findOrFail($request->query('course_id'));
+
 
         $chapters = $this->chapter
             ->query()
@@ -72,132 +79,139 @@ class ChapterController extends Controller
             ->where('course_id', '=', $course->id)
             ->get();
 
-        return view('manager.page.course.learning-roadmap.chapter.record-order-page', [
-            'course' => $course,
-            'chapters' => $chapters,
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course,
+                'chapters' => $chapters,
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.chapter.record-order', [
+                'course' => $course,
+                'chapters' => $chapters,
+            ]);
+        }
     }
 
-    public function renderDetailPage(Request $request)
+    public function detail(Request $request)
     {
-        $courseId = $request->query('course_id');
-        $chapterId = $request->query('chapter_id');
-
         $course = $this->course
             ->query()
-            ->findOrFail($courseId);
+            ->findOrFail($request->query('course_id'));
 
         $chapter = $this->chapter
             ->query()
-            ->findOrFail($chapterId);
+            ->findOrFail($request->query('chapter_id'));
 
-        return view('manager.page.course.learning-roadmap.chapter.detail-page', [
-            'course' => $course,
-            'chapter' => $chapter,
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course,
+                'chapter' => $chapter,
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.chapter.detail', [
+                'course' => $course,
+                'chapter' => $chapter,
+            ]);
+        }
     }
 
     public function store(StoreRequest $request)
     {
-        $courseId = $request->input('course_id');
-
         $orderMax = $this->chapter
             ->query()
-            ->where('course_id', $courseId)
+            ->where('course_id', $request->course_id)
             ->max('order');
-
-        $request->merge(['order' => ($orderMax + 1)]);
-
-        $attributes = $request->only([
-            'course_id',
-            'name',
-            'order',
-            'description'
-        ]);
 
         $chapter = $this->chapter
             ->query()
-            ->create($attributes);
+            ->create([
+                'course_id' => $request->course_id,
+                'name' => $request->name,
+                'order' => $request->order,
+                'description' => $request->description,
+                'order' => ($orderMax + 1)
+            ]);
 
-        return response()->json([
-            'chapter' => $chapter
-        ], Response::HTTP_CREATED);
+        if ($request->ajax()) {
+            return response()->json([
+                'chapter' => $chapter
+            ], Response::HTTP_CREATED);
+        }
     }
 
     public function update(UpdateRequest $request)
     {
-        $chapterId = $request->input('chapter_id');
-
-        $attributes = $request->only([
-            'name',
-            'description',
-        ]);
-
         $chapter = $this->chapter
             ->query()
-            ->find($chapterId);
+            ->find($request->chapter_id);
 
         if (empty($chapter)) {
-            return response()->json(
-                ['message' => 'NOT FOUND 404'],
-                Response::HTTP_NOT_FOUND
-            );
+            if ($request->ajax()) {
+                return response()->json(
+                    ['message' => 'NOT FOUND 404'],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
         }
 
-        $chapter->update($attributes);
+        $chapter->name = $request->name;
+        $chapter->description = $request->description;
+        $chapter->save();
 
-        return response()->json([
-            'chapter' => $chapter
-        ], Response::HTTP_ACCEPTED);
+        if ($request->ajax()) {
+            return response()->json([
+                'chapter' => $chapter
+            ], Response::HTTP_ACCEPTED);
+        }
     }
 
     public function delete(Request $request)
     {
-        $chapterId = $request->chapter_id;
-
         $chapter = $this->chapter
             ->query()
-            ->find($chapterId);
+            ->find($request->chapter_id);
 
         if (empty($chapter)) {
-            return response()->json([
-                'message' => 'NOT FOUND 404'
-            ], Response::HTTP_NOT_FOUND);
+            if ($request->ajax()) {
+                return response()->json(
+                    ['message' => 'NOT FOUND 404'],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
         }
 
         $chapter->delete();
 
-        return response()->json([
-            'chapter' => $chapter
-        ], Response::HTTP_ACCEPTED);
+        if ($request->ajax()) {
+            return response()->json([
+                'chapter' => $chapter
+            ], Response::HTTP_ACCEPTED);
+        }
     }
 
     public function sortRecord(Request $request)
     {
-        dd($request);
-
-        $chapterId = $request->input('chapter_id');
-
-        $attributes = $request->only([
-            'name',
-            'description',
-        ]);
-
         $chapter = $this->chapter
             ->query()
-            ->find($chapterId);
+            ->find($request->input('chapter_id'));
 
         if (empty($chapter)) {
-            return response()->json(
-                ['message' => 'NOT FOUND 404'],
-                Response::HTTP_NOT_FOUND
-            );
+            if ($request->ajax()) {
+                return response()->json(
+                    ['message' => 'NOT FOUND 404'],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
         }
 
-        $chapter->update($attributes);
+        $chapter->name = $request->name;
+        $chapter->description = $request->description;
+        $chapter->save();
 
-        return response()->json([
-            'success'
-        ], Response::HTTP_ACCEPTED);
+        if ($request->ajax()) {
+            return response()->json([
+                'chapter' => $chapter
+            ], Response::HTTP_ACCEPTED);
+        }
     }
 }

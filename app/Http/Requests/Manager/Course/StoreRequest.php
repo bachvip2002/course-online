@@ -25,7 +25,7 @@ class StoreRequest extends FormRequest
             'code' => ['required', 'unique:course,code'],
             'name' => ['required'],
             'price' => ['required', 'numeric', 'regex:/^\d+(\.\d{1,2})?$/'],
-            'image_path' => ['required', 'file', 'mimes:png,jpg', 'max:5120'],
+            'image' => ['required', 'file', 'mimes:png,jpg', 'max:5120'],
             'release_datetime' => ['nullable', 'date', 'date_format:Y-m-d H:i:s'],
             'description' => ['max:500'],
         ];

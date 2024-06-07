@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('status')->nullable();
             $table->string('address')->nullable();
             $table->string('phone_number')->nullable();
-            $table->string('avatar_link')->nullable();
+            $table->string('avatar')->nullable();
             $table->text('description')->nullable();
 
             $table->timestamp('email_verified_at')->nullable();

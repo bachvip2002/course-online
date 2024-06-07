@@ -23,7 +23,7 @@ class UserController extends Controller
         $this->user = $user;
     }
 
-    public function renderListPage(Request $request)
+    public function list(Request $request)
     {
         $users = $this->user
             ->query()
@@ -32,130 +32,153 @@ class UserController extends Controller
             ->findBy('status', $request)
             ->paginate(PAGE_SIZE_DEFAULT);
 
-        $defaultStatues = User::DEFAULT_STATUES;
-
-        return view('manager.page.user.list-page', [
-            'users' => $users,
-            'defaultStatues' => $defaultStatues,
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'users' => $users,
+                'userStatuses' => $this->user->getAllStatus(),
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.user.list', [
+                'users' => $users,
+                'userStatuses' => $this->user->getAllStatus(),
+            ]);
+        }
     }
 
-    public function renderDetailPage(Request $request)
+    public function detail(Request $request)
+    {
+        $user = $this->user
+            ->query()
+            ->find($request->user_id);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'user' => $user,
+                'userStatuses' => $this->user->getAllStatus(),
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.user.detail', [
+                'user' => $user,
+                'userStatuses' => $this->user->getAllStatus(),
+            ]);
+        }
+    }
+
+    public function create(Request $request)
+    {
+        if ($request->ajax()) {
+            return response()->json([
+                'userStatuses' => $this->user->getAllStatus(),
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.user.create', [
+                'userStatuses' => $this->user->getAllStatus(),
+            ]);
+        }
+    }
+
+    public function edit(Request $request)
     {
         $userId = $request->user_id;
-
-        // $responseClient = Http::get('https://www.youtube.com/27c95ca9-7b15-4796-8291-8a205962f5b9');
 
         $user = $this->user
             ->query()
             ->find($userId);
 
-        $defaultStatues = User::DEFAULT_STATUES;
-
-        return view('manager.page.user.detail-page', [
-            'user' => $user,
-            'defaultStatues' => $defaultStatues
-        ]);
-    }
-
-    public function renderCreatePage(Request $request)
-    {
-        $defaultStatues = User::DEFAULT_STATUES;
-
-        return view('manager.page.user.create-page', [
-            'defaultStatues' => $defaultStatues
-        ]);
-    }
-
-    public function renderEditPage(Request $request)
-    {
-        $userId = $request->user_id;
-
-        $user = $this->user
-            ->query()
-            ->find($userId);
-
-        $defaultStatues = User::DEFAULT_STATUES;
-
-        return view('manager.page.user.edit-page', [
-            'user' => $user,
-            'defaultStatues' => $defaultStatues
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'user' => $user
+            ], Response::HTTP_CREATED);
+        } else {
+            return view('manager.page.user.edit', [
+                'user' => $user,
+                'userStatuses' => $this->user->getAllStatus(),
+            ]);
+        }
     }
 
     public function store(StoreRequest $request)
     {
-        $imageUpload = $request->file('avatar_path');
+        $contents = $request->file('avatar');
+        $path = $this->user->getTable();
 
-        $attributes = $request->only([
-            'full_name',
-            'email',
-            'password',
-            'id_login',
-            'status',
-            'address',
-            'phone_number',
-            'description',
-        ]);
-
-        $avatarPath = Storage::disk('public')->put(
-            'avatar',
-            $imageUpload
+        $avatar = Storage::disk('public')->put(
+            $path,
+            $contents
         );
 
-        $attributes['avatar_path'] = $avatarPath;
-
         $user = $this->user
             ->query()
-            ->create($attributes);
+            ->create([
+                'full_name' => $request->full_name,
+                'email'  => $request->email,
+                'password'  => $request->password,
+                'id_login'  => $request->id_login,
+                'status'  => $request->status,
+                'address'  => $request->address,
+                'phone_number'  => $request->description,
+                'description'  => $request->description,
+                'avatar'  =>  $avatar,
+            ]);
 
-        return response()->json([
-            'user' => $user
-        ], Response::HTTP_CREATED);
+        if ($request->ajax()) {
+            return response()->json([
+                'user' => $user
+            ], Response::HTTP_CREATED);
+        }
     }
 
+    /**
+     * update
+     *
+     * @param  \App\Http\Requests\Manager\User\UpdateRequest $request
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update(UpdateRequest $request)
     {
-        $userId = $request->user_id;
-        $imageUpload = $request->file('avatar_path');
-
-        $attributes = $request->only([
-            'full_name',
-            'email',
-            'id_login',
-            'status',
-            'address',
-            'phone_number',
-            'description',
-        ]);
-
-        if ($password = $request->password) {
-            $attributes['password'] = $password;
-        }
-
-        if ($request->hasFile('avatar_path')) {
-            $avatarPath = Storage::disk('public')->put(
-                'avatar',
-                $imageUpload
-            );
-            $attributes['avatar_path'] = $avatarPath;
-        }
-
         $user = $this->user
             ->query()
-            ->find($userId)
-            ->update($attributes);
+            ->find($request->user_id);
 
-        return response()->json([
-            'user' => $user
-        ], Response::HTTP_ACCEPTED);
+        if ($password = $request->password) {
+            $user->password = $password;
+        }
+
+        if ($request->hasFile('avatar')) {
+            $contents = $request->file('avatar');
+            $path = $user->getTable();
+
+            $avatar = Storage::disk('public')->put(
+                $path,
+                $contents
+            );
+
+            $user->avatar = $avatar;
+        }
+
+        $user->full_name = $request->full_name;
+        $user->email = $request->email;
+        $user->password = $request->password;
+        $user->id_login = $request->id_login;
+        $user->status = $request->status;
+        $user->address = $request->address;
+        $user->phone_number = $request->phone_number;
+        $user->description = $request->description;
+        $user->save();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'user' => $user
+            ], Response::HTTP_ACCEPTED);
+        }
     }
 
 
     /**
      * Method delete
      *
-     * @param \Illuminate\Http\Request $request [explicite description]
+     * @param \Illuminate\Http\Request $request 
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -175,8 +198,10 @@ class UserController extends Controller
 
         $user->delete();
 
-        return response()->json([
-            'user' => $user
-        ], Response::HTTP_ACCEPTED);
+        if ($request->ajax()) {
+            return response()->json([
+                'user' => $user
+            ], Response::HTTP_ACCEPTED);
+        }
     }
 }

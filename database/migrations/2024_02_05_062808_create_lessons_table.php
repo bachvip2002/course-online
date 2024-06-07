@@ -19,8 +19,8 @@ return new class extends Migration
             $table->integer('try_learning')->nullable();
             $table->date('release_datetime')->nullable();
             $table->integer('type')->nullable();
-            $table->string('video_path')->nullable();
-            $table->string('avatar_path')->nullable();
+            $table->string('video')->nullable();
+            $table->string('avatar')->nullable();
             $table->string('description')->nullable();
             $table->integer('order')->nullable();
 

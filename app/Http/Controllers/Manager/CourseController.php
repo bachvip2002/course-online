@@ -23,7 +23,7 @@ class CourseController extends Controller
         $this->course = $course;
     }
 
-    public function renderListPage(Request $request)
+    public function list(Request $request)
     {
         $courses = $this->course
             ->query()
@@ -31,125 +31,121 @@ class CourseController extends Controller
             ->findStrBy('code', $request)
             ->paginate(PAGE_SIZE_DEFAULT);
 
-        return view('manager.page.course.list-page', [
-            'courses' => $courses
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'courses' => $courses
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.list', [
+                'courses' => $courses
+            ]);
+        }
     }
 
-    public function renderDetailPage(Request $request)
+    public function detail(Request $request)
     {
-        $courseId = $request->course_id;
-
         $course = $this->course
             ->query()
-            ->find($courseId);
+            ->find($request->course_id);
 
-        return view('manager.page.course.detail-page', [
-            'course' => $course
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.detail', [
+                'course' => $course
+            ]);
+        }
     }
 
-    public function renderCreatePage()
+    public function create(Request $request)
     {
-        return view('manager.page.course.create-page');
+        if ($request->ajax()) {
+            return response()->json([], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.create');
+        }
     }
 
-    public function renderEditPage(Request $request)
+    public function edit(Request $request)
     {
-        $courseId = $request->course_id;
-
         $course = $this->course
             ->query()
-            ->find($courseId);
+            ->find($request->course_id);
 
-        return view('manager.page.course.edit-page', [
-            'course' => $course
-        ]);
-    }
-
-    public function renderTable(Request $request)
-    {
-        $courses = $this->course
-            ->query()
-            ->findStrBy('name', $request)
-            ->findStrBy('code', $request)
-            ->paginate(PAGE_SIZE_DEFAULT);
-
-        $table = view('manager.page.course.component.table', [
-            'courses' => $courses
-        ])->render();
-
-        $paginate = view('manager.layout.paginate.basic-ajax', [
-            'paginator' => $courses
-        ])->render();
-
-        return response()->json([
-            'table' => $table,
-            'paginate' => $paginate,
-        ], Response::HTTP_ACCEPTED);
+        if ($request->ajax()) {
+            return response()->json(
+                ['course' => $course],
+                Response::HTTP_ACCEPTED
+            );
+        } else {
+            return view('manager.page.course.edit', [
+                'course' => $course
+            ]);
+        }
     }
 
     public function store(StoreRequest $request)
     {
-        $imageUpload = $request->file('image_path');
+        $path = $this->course->getTable();
+        $contents = $request->file('image');
 
-        $attributes  = $request->only([
-            'code',
-            'name',
-            'price',
-            'status',
-            'image_path',
-            'release_datetime',
-            'description',
-        ]);
-
-        $imagePath = Storage::disk('public')->put(
-            'course',
-            $imageUpload
+        $path = Storage::disk('public')->put(
+            $path,
+            $contents
         );
-
-        $attributes['image_path'] = $imagePath;
 
         $course = $this->course
             ->query()
-            ->create($attributes);
+            ->create([
+                'code' => $request->code,
+                'name' => $request->name,
+                'price' => $request->price,
+                'status' => $request->status,
+                'image' => $path,
+                'release_datetime' => $request->release_datetime,
+                'description' => $request->description,
+            ]);
 
-        return response()->json([
-            'user' => $course
-        ], Response::HTTP_CREATED);
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course
+            ], Response::HTTP_ACCEPTED);
+        }
     }
 
     public function update(UpdateRequest $request)
     {
-        $courseId = $request->course_id;
-        $imageUpload = $request->file('image_path');
-
-        $attributes = $request->only([
-            'code',
-            'name',
-            'price',
-            'status',
-            'image_path',
-            'release_datetime',
-            'description',
-        ]);
-
-        if ($request->hasFile('image_path')) {
-            $avatarPath = Storage::disk('public')->put(
-                'course',
-                $imageUpload
-            );
-            $attributes['image_path'] = $avatarPath;
-        }
+        $path = $this->course->getTable();
+        $contents = $request->file('image');
 
         $course = $this->course
             ->query()
-            ->find($courseId)
-            ->update($attributes);
+            ->find($request->course_id);
 
-        return response()->json([
-            'course' => $course
-        ], Response::HTTP_ACCEPTED);
+        if ($request->hasFile('image')) {
+            $imagePath = Storage::disk('public')->put(
+                $path,
+                $contents
+            );
+
+            $course->image = $imagePath;
+        }
+
+        $course->code = $request->code;
+        $course->name = $request->name;
+        $course->price = $request->price;
+        $course->status = $request->status;
+        $course->image = $request->image;
+        $course->release_datetime = $request->release_datetime;
+        $course->description = $request->description;
+
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course
+            ], Response::HTTP_ACCEPTED);
+        }
     }
 
     public function delete(Request $request)
@@ -160,7 +156,7 @@ class CourseController extends Controller
             ->query()
             ->find($courseId);
 
-        if (empty($user)) {
+        if (empty($user) && $request->ajax()) {
             return response()->json([
                 'message' => 'NOT FOUND 404'
             ], Response::HTTP_NOT_FOUND);
@@ -168,8 +164,10 @@ class CourseController extends Controller
 
         $course->delete();
 
-        return response()->json([
-            'course' => $course
-        ], Response::HTTP_ACCEPTED);
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course
+            ], Response::HTTP_ACCEPTED);
+        }
     }
 }

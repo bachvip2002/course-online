@@ -29,7 +29,7 @@ class UpdateRequest extends FormRequest
             'status' => 'required|numeric|between:1,3',
             'address' => 'required',
             'phone_number' => 'required|regex:/^\d{10}$/',
-            'avatar_path' => 'nullable|file|mimes:png,jpg|max:5120',
+            'avatar' => 'nullable|file|mimes:png,jpg|max:5120',
             'description' => 'max:500',
         ];
     }

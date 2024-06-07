@@ -25,7 +25,7 @@ class UpdateRequest extends FormRequest
             'code' => ['required', 'unique:course,code,' . request()->query('course_id')],
             'name' => ['required'],
             'price' => ['required', 'numeric', 'regex:/^\d+(\.\d{1,2})?$/'],
-            'image_path' => ['nullable', 'file', 'mimes:png,jpg', 'max:5120'],
+            'image' => ['nullable', 'file', 'mimes:png,jpg', 'max:5120'],
             'release_datetime' => ['nullable', 'date', 'date_format:Y-m-d H:i:s'],
             'description' => ['max:500'],
         ];

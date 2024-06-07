@@ -31,7 +31,7 @@ class ResourceManagementController extends Controller
             ->query()
             ->paginate(PAGE_SIZE_DEFAULT);
 
-        return view('manager.page.resource-management.list-page', [
+        return view('manager.page.resource-management.list', [
             'resourceTypes' => $resourceTypes,
             'resources' => $resources,
         ]);
@@ -39,7 +39,7 @@ class ResourceManagementController extends Controller
 
     public function renderCreatePage()
     {
-        return view('manager.page.resource-management.create-page');
+        return view('manager.page.resource-management.create');
     }
 
     public function store(StoreRequest $request)

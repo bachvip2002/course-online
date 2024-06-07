@@ -19,6 +19,8 @@ class User extends Model
         SoftDeletes,
         FilterQueryTrait;
 
+    protected $table = 'users';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -32,7 +34,7 @@ class User extends Model
         'status',
         'address',
         'phone_number',
-        'avatar_path',
+        'avatar',
         'description',
     ];
 
@@ -56,17 +58,42 @@ class User extends Model
         'password' => 'hashed',
     ];
 
-    const DEFAULT_STATUES = [
-        1 => 'Hoạt động',
-        2 => 'Không hoạt động',
-        3 => 'Tài khoản bị khóa',
+    const STATUS_LIST = [
+        1 => 'Active',
+        2 => 'Inactive',
+        3 => 'Account locked',
     ];
 
-    const DEFAULT_STATUES_BG_COLOR = [
+    const STATUES_BG_COLOR_LIST = [
         1 => 'light-success',
         2 => 'light-danger',
         3 => 'light-secondary text-black',
     ];
+
+    protected $appends = [
+        'status_text',
+        'status_bg_color',
+    ];
+
+
+    /**
+     * getAllStatus
+     *
+     * @return array
+     */
+    public function getAllStatus()
+    {
+        $statusObjects = [];
+
+        foreach (self::STATUS_LIST as $id => $status) {
+            $statusObjects[] = (object) [
+                'id' => $id,
+                'status' => $status
+            ];
+        }
+
+        return $statusObjects;
+    }
 
     /**
      * Method getTStatusTextAttribute 
@@ -75,7 +102,7 @@ class User extends Model
      */
     public function getStatusTextAttribute()
     {
-        foreach (self::DEFAULT_STATUES as $statusId => $status) {
+        foreach (self::STATUS_LIST as $statusId => $status) {
             if ($statusId == $this->status) {
                 return $status;
             }
@@ -90,7 +117,7 @@ class User extends Model
      */
     public function getStatusBgColorAttribute()
     {
-        foreach (self::DEFAULT_STATUES_BG_COLOR as $statusId => $status) {
+        foreach (self::STATUES_BG_COLOR_LIST as $statusId => $status) {
             if ($statusId == $this->status) {
                 return $status;
             }

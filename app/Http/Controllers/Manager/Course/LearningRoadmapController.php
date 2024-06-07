@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Chapter;
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * LearningRoadmapController of Pages ...
@@ -23,7 +24,7 @@ class LearningRoadmapController extends Controller
         $this->chapter = $chapter;
     }
 
-    public function renderIndexPage(Request $request)
+    public function index(Request $request)
     {
         $courseId = $request->course_id;
 
@@ -42,9 +43,16 @@ class LearningRoadmapController extends Controller
             ->where('course_id', '=', $course->id)
             ->get();
 
-        return view('manager.page.course.learning-roadmap.page', [
-            'chapters' => $chapters,
-            'course' => $course
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'chapters' => $chapters,
+                'course' => $course
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.index', [
+                'chapters' => $chapters,
+                'course' => $course
+            ]);
+        }
     }
 }

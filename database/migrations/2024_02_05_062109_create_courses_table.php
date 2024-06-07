@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->float('price')->nullable();
             $table->integer('status')->nullable();
-            $table->string('image_path')->nullable();
+            $table->string('image')->nullable();
             $table->dateTime('release_datetime')->nullable();
             $table->text('description')->nullable();
 

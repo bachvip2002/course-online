@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Manager\Course\LearningRoadmap;
 
-use App\Exceptions\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Manager\Course\LearningRoadmap\Lesson\UploadVideoRequest;
 use App\Models\Chapter;
@@ -10,7 +9,6 @@ use App\Models\Course;
 use App\Models\Lesson;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,12 +31,16 @@ class LessonController extends Controller
         $this->lesson = $lesson;
     }
 
-    public function renderDetailPage(Request $request)
+    public function detail(Request $request)
     {
-        return view('manager.page.course.learning-roadmap.lesson.detail-page');
+        if ($request->ajax()) {
+            return response()->json([], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.lesson.detail');
+        }
     }
 
-    public function renderCreatePage(Request $request)
+    public function create(Request $request)
     {
         $courseId = $request->query('course_id');
         $chapterId = $request->query('chapter_id');
@@ -53,96 +55,111 @@ class LessonController extends Controller
 
         $chapter->load('lessons');
 
-        return view('manager.page.course.learning-roadmap.lesson.create-page', [
-            'course' => $course,
-            'chapter' => $chapter,
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course,
+                'chapter' => $chapter,
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.lesson.create', [
+                'course' => $course,
+                'chapter' => $chapter,
+            ]);
+        }
     }
 
-    public function renderVideoCreatePage(Request $request)
+    public function videoCreate(Request $request)
     {
-        $lessonId = $request->query('lesson_id');
-        $courseId = $request->query('course_id');
-        $chapterId = $request->query('chapter_id');
-
         $lesson = $this->lesson
             ->query()
-            ->find($lessonId);
+            ->find($request->query('lesson_id'));
 
-        return view('manager.page.course.learning-roadmap.lesson.video-create-page', [
-            'lesson' => $lesson,
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'lesson' => $lesson,
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.lesson.video-create', [
+                'lesson' => $lesson,
+            ]);
+        }
     }
 
-    public function renderEditPage(Request $request)
+    public function edit(Request $request)
     {
-        return view('manager.page.course.learning-roadmap.lesson.edit-page');
+
+        if ($request->ajax()) {
+            return response()->json([], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.lesson.edit');
+        }
     }
 
-    public function renderRecordOrderPage(Request $request)
+    public function recordOrder(Request $request)
     {
-        $courseId = $request->query('course_id');
-        $chapterId = $request->query('chapter_id');
-
         $course = $this->course
             ->query()
-            ->findOrFail($courseId);
+            ->findOrFail($request->query('course_id'));
 
         $chapter = $this->chapter
             ->query()
-            ->findOrFail($chapterId);
+            ->findOrFail($request->query('chapter_id'));
 
         $lessons = $this->lesson
             ->query()
             ->where('chapter_id', $chapter->id)
             ->get();
 
-        return view('manager.page.course.learning-roadmap.lesson.record-order-page', [
-            'course' => $course,
-            'chapter' => $chapter,
-            'lessons' => $lessons,
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'course' => $course,
+                'chapter' => $chapter,
+                'lessons' => $lessons,
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.course.learning-roadmap.lesson.record-order', [
+                'course' => $course,
+                'chapter' => $chapter,
+                'lessons' => $lessons,
+            ]);
+        }
     }
 
-    public function store()
+    public function store(Request $request)
     {
     }
 
     public function uploadVideo(UploadVideoRequest $request)
     {
-        $videoContent = $request->file('video_path');
-        $imageContent = $request->file('avatar_path');
-        $lessonId = $request->query('lesson_id');
-
         $lesson = $this->lesson
             ->query()
-            ->find($lessonId);
+            ->find($request->query('lesson_id'));
 
         try {
-            $videoPath = Storage::disk('public')->put('lesson/video', $videoContent);
-            $avatarPath = Storage::disk('public')->put('lesson/image', $imageContent);
-
-            $lesson->update([
-                'avatar_path' => $avatarPath,
-                'video_path' => $videoPath,
-            ]);
-        } catch (Exception $exception) {
-
-            Log::build([
-                'driver' => 'single',
-                'path' => storage_path('logs/upload-file.log'),
-            ])->info(
-                $exception->getMessage(),
-                // $exception->getTrace()
+            $videoPath = Storage::disk('public')->put(
+                $this->lesson->getTable() . '/video',
+                $request->file('video_path')
             );
 
-            throw new JsonResponse([
-                'message' => $exception->getMessage()
-            ], (int)$exception->getCode());
+            $avatarPath = Storage::disk('public')->put(
+                $this->lesson->getTable() . '/image',
+                $request->file('avatar_path')
+            );
+
+            $lesson->avatar_path = $avatarPath;
+            $lesson->video_path = $videoPath;
+        } catch (Exception $exception) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => $exception->getMessage()
+                ], (int)$exception->getCode());
+            }
         }
 
-        return response()->json([
-            'lesson' => $lesson,
-        ], Response::HTTP_CREATED);
+        if ($request->ajax()) {
+            return response()->json([
+                'lesson' => $lesson,
+            ], Response::HTTP_CREATED);
+        }
     }
 }

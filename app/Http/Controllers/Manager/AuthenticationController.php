@@ -13,9 +13,15 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AuthenticationController extends Controller
 {
-    public function renderSignInPage()
+    public function signIn(Request $request)
     {
-        return view('manager.page.authentication.sign-in-page');
+        if ($request->ajax()) {
+            return response()->json([
+                'message' => 'success'
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return view('manager.page.authentication.sign-in');
+        }
     }
 
     public function login(Request $request)
@@ -25,22 +31,30 @@ class AuthenticationController extends Controller
         $authSuccessful = Auth::guard('admin')
             ->attempt($credentials);
 
-        if ($authSuccessful) {
+        if ($authSuccessful && $request->ajax()) {
             return response()->json([
                 'user' => Auth::guard('admin')->user()
             ], Response::HTTP_ACCEPTED);
         }
 
-        throw new JsonResponse([
-            'message' => 'Không đúng tài khoản mật khẩu'
-        ], Response::HTTP_UNAUTHORIZED);
+        if ($request->ajax()) {
+            return response()->json([
+                'message' => 'Không đúng tài khoản mật khẩu'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::guard('admin')
             ->logout();
 
-        return redirect()->route('manager.authentication.sign-in-page');
+        if ($request->ajax()) {
+            return response()->json([
+                'message' => 'success'
+            ], Response::HTTP_ACCEPTED);
+        } else {
+            return redirect()->route('manager.authentication.sign-in');
+        }
     }
 }
